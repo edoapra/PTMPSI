@@ -125,9 +125,11 @@ def get_qm_data(residue,ligand=False,metal=False,ff="AMBER99",dohfresp=True,path
         elif isinstance(alpha, Residue):
             conformers = [alpha]
         else:
-            raise KeyError("residue must be a Protein, Chain, or Residue instance")
+            conformers = [alpha]
+            alpha=alpha[0]
+#            raise KeyError("residue must be a Protein, Chain, or Residue instance")
         if len(conformers) > 1:
-            raise KeyError("Ligand parameterization only accepts one residue")
+            raise KeyError("Ligand parameterization only accepts one residue while you have", len(conformers))
         alpha = [copy.deepcopy(alpha)]
     elif metal:
         _alpha = []
