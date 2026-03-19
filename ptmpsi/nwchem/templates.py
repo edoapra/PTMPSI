@@ -234,7 +234,6 @@ do
     rsync $1  $2/.
 done
 rsync  $1  $2/.
-exit 0
 }}
 
 trap cleanup SIGINT SIGTERM SIGKILL SIGSEGV SIGCONT
@@ -260,7 +259,7 @@ export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-dev.ompi41x:lates
 
 srun -N $SLURM_NNODES -n $SLURM_NNODES apptainer pull -F --name $NWBIN --disable-cache oras://$NWCHEM_IMAGE
 export APPTAINERENV_SCRATCH_DIR={scratch}
-export APPTAINER_CACHEDIR=${{SYSTEM_NAME}}/${{SLURM_JOB_ACCOUNT}}/cache
+export APPTAINER_CACHEDIR=/{{SYSTEM_NAME}}/${{SLURM_JOB_ACCOUNT}}/cache
 mkdir -p ${{APPTAINER_CACHEDIR}}
 export APPTAINERENV_OMP_NUM_THREADS=${{OMP_NUM_THREADS}}
 #export APPTAINERENV_NWCHEM_BASIS_LIBRARY=$NWCHEM_BASIS_LIBRARY
