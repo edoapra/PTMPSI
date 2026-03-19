@@ -212,25 +212,37 @@ slurm_header["Tahoma"] = """#!/bin/bash
 
 cleanup()
 {{
-cp *.xyz $SLURM_SUBMIT_DIR || :
-cp *.log $SLURM_SUBMIT_DIR || :
-cp *.txt $SLURM_SUBMIT_DIR || :
-cp *.json $SLURM_SUBMIT_DIR || :
-cp *.grid $SLURM_SUBMIT_DIR || :
-cp *.qrs $SLURM_SUBMIT_DIR || :
-cp *.pdb $SLURM_SUBMIT_DIR || :
-cp *.rst $SLURM_SUBMIT_DIR || :
-cp *.top $SLURM_SUBMIT_DIR || :
-cp *.trj $SLURM_SUBMIT_DIR || :
-cp *.out $SLURM_SUBMIT_DIR || :
+rsync *.xyz $SLURM_SUBMIT_DIR/. || :
+rsync *.log $SLURM_SUBMIT_DIR/. || :
+rsync *.txt $SLURM_SUBMIT_DIR/. || :
+rsync *.json $SLURM_SUBMIT_DIR/. || :
+rsync *.grid $SLURM_SUBMIT_DIR/. || :
+rsync *.qrs $SLURM_SUBMIT_DIR/. || :
+rsync *.pdb $SLURM_SUBMIT_DIR/. || :
+rsync *.rst $SLURM_SUBMIT_DIR/. || :
+rsync *.top $SLURM_SUBMIT_DIR/. || :
+rsync *.trj $SLURM_SUBMIT_DIR/. || :
+rsync *.out $SLURM_SUBMIT_DIR/. || :
+}}
+sync_file()
+{{
+pid=$!
+while :
+do
+    if [ `ps -ef | grep "$pid" | grep -v "grep" | wc -l` == 0 ]; then echo "exiting while";  break; fi
+    sleep 30s
+    rsync $1  $2/.
+done
+rsync  $1  $2/.
+exit 0
 }}
 
 trap cleanup SIGINT SIGTERM SIGKILL SIGSEGV SIGCONT
 source /etc/profile.d/modules.sh
 module purge
-module load python
-module load gcc/9.3.0
-module load openmpi
+#module load python
+#module load gcc/9.3.0
+#module load openmpi
 
 #export NWCHEM_BASIS_LIBRARY=/cluster/apps/nwchem/nwchem/src/basis/libraries/
 #export MKL_NUM_THREADS=1
@@ -242,10 +254,14 @@ export https_proxy="http://proxy.emsl.pnl.gov:3128"
 export http_proxy="http://proxy.emsl.pnl.gov:3128"
 export NWBIN=/big_scratch/nwchems_`id -u`.img
 #export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-720.ompi41x:latest"
-export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-dev.mpi3.ompi5x:latest"
+#export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-dev.mpi3.ompi5x:latest"
+#export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-mdev.ompi4.1.8.ucx1.15.0:latest"
+export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-dev.ompi41x:latest"
 
 srun -N $SLURM_NNODES -n $SLURM_NNODES apptainer pull -F --name $NWBIN --disable-cache oras://$NWCHEM_IMAGE
 export APPTAINERENV_SCRATCH_DIR={scratch}
+export APPTAINER_CACHEDIR=${{SYSTEM_NAME}}/${{SLURM_JOB_ACCOUNT}}/cache
+mkdir -p ${{APPTAINER_CACHEDIR}}
 export APPTAINERENV_OMP_NUM_THREADS=${{OMP_NUM_THREADS}}
 #export APPTAINERENV_NWCHEM_BASIS_LIBRARY=$NWCHEM_BASIS_LIBRARY
 
@@ -449,6 +465,7 @@ task dft gradient
 EOF
 
 $NWCHEM_COMMAND $name > ${{name%.nw}}.log
+sync_file ${{name%.nw}}.log ${{SLURM_SUBMIT_DIR}}
 
 done
 
@@ -712,12 +729,13 @@ pyconstraint = "[{},{}],\n"
 coordinates = "{}   {: 14.8f}   {: 14.8f}   {: 14.8f}\n"
 pyprint = """print("{name}: {{:10.6f}}".format(q[{atom}]))\n"""
 runsingularity = {}
-runsingularity['Tahoma'] = "srun --mpi=pmi2 -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind {scratch},$NWCHEM_BASIS_LIBRARY $NWBIN nwchem {name}.nw > {name}.log\n\n"
+runsingularity['Tahoma'] = "srun --mpi=pmi2 -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind {scratch},$NWCHEM_BASIS_LIBRARY $NWBIN nwchem {name}.nw > {name}.log & \n"
 runsingularity['Frontier'] = "srun -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind $BINDS --workdir `pwd` $NWBIN nwchem {name}.nw > {name}.log\n\n"
 runsingularity['Polaris'] = "mpiexec -hostfile $PBS_NODEFILE -n ${{NTOTRANKS}} -ppn ${{NRANKS_PER_NODE}} --depth=${{NDEPTH}} --cpu-bind=core $NWBIN {name}.nw > {name}.log\n\n"
 runsingularity_prefix = {}
-runsingularity_prefix_tahoma = "srun --mpi=pmi2 -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind {scratch},$NWCHEM_BASIS_LIBRARY $NWBIN nwchem"
+runsingularity_prefix_tahoma = "srun --mpi=pmi2 -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind {scratch},$NWCHEM_BASIS_LIBRARY $NWBIN nwchem &"
 runsingularity_prefix_frontier = "srun -N $SLURM_NNODES -n $SLURM_NPROCS apptainer exec --bind $BINDS --workdir `pwd` $NWBIN nwchem"
 script_copy = {}
 script_copy['slurm'] = "cp ${{SLURM_SUBMIT_DIR}}/{filename} . \n"
 script_copy['pbs'] = "cp $PBS_O_WORKDIR/{filename} . \n"
+rsync_output = "sync_file {filename} ${{SLURM_SUBMIT_DIR}} \n\n"
