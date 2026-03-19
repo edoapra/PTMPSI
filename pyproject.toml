@@ -21,6 +21,9 @@ dependencies = [
             'matplotlib',
             'lxml',
             'prody',
+            'jupytext',
+            'jupyterlab_server==2.22.1',
+            'jupyterlab==3.4.8',
             'torsiondrive @ git+https://github.com/dmejiar/torsiondrive.git@nwchem ',
             'forcebalance @ git+https://github.com/dmejiar/forcebalance.git@ptmflow ',
 ]
