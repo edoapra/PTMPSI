@@ -231,9 +231,9 @@ while :
 do
     if [ `ps -ef | grep "$pid" | grep -v "grep" | wc -l` == 0 ]; then echo "exiting while";  break; fi
     sleep 30s
-    rsync $1  $2/.
+    rsync -a $1  $2/.
 done
-rsync  $1  $2/.
+rsync -a $1  $2/.
 }}
 
 trap cleanup SIGINT SIGTERM SIGKILL SIGSEGV SIGCONT

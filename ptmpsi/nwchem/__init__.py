@@ -299,7 +299,7 @@ def get_qm_data(residue,ligand=False,metal=False,ff="AMBER99",dohfresp=True,path
             infile.write(script_copy[script_method].format(filename=f"{tail}_hess.nw"))
             infile.write(f"""echo "Running conf{str(idx)} hessian"\n""")
             infile.write(runsingularity[slurm.machine.name].format(scratch=slurm.scratch,name=f"{tail}_hess"))
-            infile.write(rsync_output.format(filename=f"{tail}.log"))
+            infile.write(rsync_output.format(filename=f"{tail}_hess.log"))
         venv = '''# Create a Virtual Environment
 if [ -d "venv" ]; then
   echo "Virtual environment already exists"
