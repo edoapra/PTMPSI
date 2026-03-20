@@ -207,7 +207,7 @@ aqe_h100.partitions["premium"].default = True
 tahoma = Machine(name="Tahoma",
         partitions={
             "normal": Partition(name="normal", memory=0, ncpus=36,
-                              ngpus=0, maxtime=72, maxnode=10),
+                              ngpus=0, maxtime=72, maxnode=20),
             "analysis": Partition(name="analysis", memory=0, ncpus=36,
                               ngpus=1, maxtime=3, maxnode=1)
             },
