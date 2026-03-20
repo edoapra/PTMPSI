@@ -258,7 +258,7 @@ export NWBIN=/big_scratch/nwchems_`id -u`.img
 export NWCHEM_IMAGE="ghcr.io/edoapra/nwchem-singularity/nwchem-dev.ompi41x:latest"
 
 export APPTAINERENV_SCRATCH_DIR={scratch}
-export APPTAINER_CACHEDIR=/{{SYSTEM_NAME}}/${{SLURM_JOB_ACCOUNT}}/cache
+export APPTAINER_CACHEDIR=/${{SYSTEM_NAME}}/${{SLURM_JOB_ACCOUNT}}/cache
 mkdir -p ${{APPTAINER_CACHEDIR}}
 apptainer pull -F --name $NWBIN oras://$NWCHEM_IMAGE
 srun -N $SLURM_NNODES -n $SLURM_NNODES apptainer pull -F --name $NWBIN oras://$NWCHEM_IMAGE
