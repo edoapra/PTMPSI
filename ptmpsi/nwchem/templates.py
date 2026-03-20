@@ -37,7 +37,7 @@ xtb
 end
 
 driver
- maxiter 100
+ maxiter 900
 end
 
 task xtb optimize ignore
