@@ -14,7 +14,9 @@ end
 task dft
 """
 
-respnw = """start
+respnw = """echo
+start
+charge {charge}
 title "RESP {name}"
 set driver:linopt 0
 set int:cando_txs f
@@ -30,7 +32,6 @@ end
 
 {gcons}
 
-charge {charge}
 
 xtb
  acc 0.1
@@ -436,8 +437,10 @@ split -d -a2 -l$nlines --additional-suffix=.xyz scan.xyz scan-
 for file in `ls scan-*.xyz`; do
 name=${{file%.xyz}}.nw
 cat <<EOF >$name 
+echo
 start
 memory {memory} mb
+charge {charge}
 set int:cando_txs f
 set int:cando_nw f
 
@@ -445,7 +448,6 @@ geometry
 load "$file"
 end
 
-charge {charge}
 
 basis "ao basis" spherical
  * library def2-tzvp
@@ -515,8 +517,10 @@ cp beta_hess.log $SLURM_SUBMIT_DIR
 """
 
 
-hessnw = """start
+hessnw = """echo
+start
 memory total {memory} mb noverify
+charge {charge}
 title "{name} hessian calculation"
 
 set int:cando_txs f
@@ -536,7 +540,6 @@ basis "cd basis" spherical bse
  * library {cdbasis}
 end
 
-charge {charge}
 
 dft
  noio
@@ -556,8 +559,10 @@ end
 task dft frequencies
 """
 
-torsnw = """start
+torsnw = """echo
+start
 memory total {memory} mb
+charge {charge}
 title "{name} torsion scan"
 
 set int:cando_txs f
@@ -578,7 +583,6 @@ basis "cd basis" spherical bse
  * library {cdbasis}
 end
 
-charge {charge}
 
 dft
  noio
