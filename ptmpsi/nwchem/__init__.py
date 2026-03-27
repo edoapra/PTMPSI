@@ -331,7 +331,7 @@ python -m pip install numpy'''
     with open(os.path.join(qm_path, "espfit.py"),"w") as fitting:
         hcons = []
         for i,iname in enumerate(names):
-            if iname[0:2] not in ["HA","HB","HG","HD","HE","HH","H1","H2","H3"]: continue
+            if iname[0:2] not in ["HA","HB","HG","HD","HE","HH","H1","H2","H3"] and iname not in ["H"]: continue
             if metal and iname[0:2] in ["HH"]: continue
 
             bonded = None
@@ -346,14 +346,15 @@ python -m pip install numpy'''
 
             for j,jname in enumerate(names):
                 if j == i: continue
-                if jname[0:2] not in ["HA","HB","HG","HD","HE","HH","H1","H2","H3"]: continue
-                if norm(coords[0][j]-coords[0][bonded]) < 1.15:
+                if jname[0:2] not in ["H ","HA","HB","HG","HD","HE","HH","H1","H2","H3"] and jname not in ["H"]: continue
+                if norm(coords[0][j]-coords[0][bonded]) < 1.80:
                     found = False
                     for icons in hcons:
                         if icons[0] == i and icons[1] == j: found = True
                         if icons[0] == j and icons[1] == i: found = True
                         if found: break
                     if found: continue
+                    print(' hcons ij ',i,j)
                     hcons.append([i,j])
 
         fitting.write(fit.format(
